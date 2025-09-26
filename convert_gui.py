@@ -25,6 +25,11 @@ class VideoConverterGUI:
         self.current_process = None
         self.conversion_thread = None
         
+        # Progress tracking
+        self.total_duration = 0
+        self.current_time = 0
+        self.conversion_speed = 0
+        
         # Setup cleanup on window close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         
@@ -100,12 +105,23 @@ class VideoConverterGUI:
         
         # Status text
         self.status_text = tk.Text(main_frame, height=8, width=70, wrap=tk.WORD)
-        self.status_text.grid(row=6, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
+        self.status_text.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
         
-        # Scrollbar for status text
-        scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.status_text.yview)
-        scrollbar.grid(row=6, column=3, sticky=(tk.N, tk.S), pady=10)
-        self.status_text.configure(yscrollcommand=scrollbar.set)
+        # Progress percentage display
+        progress_frame = ttk.Frame(main_frame)
+        progress_frame.grid(row=6, column=2, sticky=(tk.N, tk.S), padx=(10, 0), pady=10)
+        
+        ttk.Label(progress_frame, text="Progress:", font=("Arial", 9, "bold")).pack(anchor=tk.W)
+        self.progress_percent_label = ttk.Label(progress_frame, text="0%", font=("Arial", 12, "bold"))
+        self.progress_percent_label.pack(anchor=tk.W, pady=(5, 10))
+        
+        ttk.Label(progress_frame, text="Time:", font=("Arial", 9, "bold")).pack(anchor=tk.W)
+        self.time_progress_label = ttk.Label(progress_frame, text="00:00 / 00:00", font=("Arial", 10))
+        self.time_progress_label.pack(anchor=tk.W, pady=(5, 10))
+        
+        ttk.Label(progress_frame, text="Speed:", font=("Arial", 9, "bold")).pack(anchor=tk.W)
+        self.speed_label = ttk.Label(progress_frame, text="0x", font=("Arial", 10))
+        self.speed_label.pack(anchor=tk.W, pady=(5, 0))
         
         # Configure row weight for text area
         main_frame.rowconfigure(6, weight=1)
@@ -183,6 +199,81 @@ class VideoConverterGUI:
         self.status_text.see(tk.END)
         self.root.update_idletasks()
     
+    def parse_duration(self, duration_str):
+        """Parse duration string (HH:MM:SS.ms) to seconds"""
+        try:
+            parts = duration_str.split(':')
+            if len(parts) == 3:
+                hours = float(parts[0])
+                minutes = float(parts[1])
+                seconds = float(parts[2])
+                return hours * 3600 + minutes * 60 + seconds
+        except:
+            pass
+        return 0
+    
+    def format_time(self, seconds):
+        """Format seconds to HH:MM:SS"""
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+    
+    def update_progress_display(self, current_time=None, speed=None):
+        """Update the progress percentage and time display"""
+        if current_time is not None:
+            self.current_time = current_time
+        if speed is not None:
+            self.conversion_speed = speed
+            
+        # Calculate percentage
+        if self.total_duration > 0:
+            percentage = min(100, (self.current_time / self.total_duration) * 100)
+            self.progress_percent_label.configure(text=f"{percentage:.1f}%")
+            
+            # Update progress bar to determinate mode
+            self.progress.configure(mode='determinate', maximum=100, value=percentage)
+        else:
+            self.progress_percent_label.configure(text="0%")
+        
+        # Update time display
+        current_formatted = self.format_time(self.current_time)
+        total_formatted = self.format_time(self.total_duration)
+        self.time_progress_label.configure(text=f"{current_formatted} / {total_formatted}")
+        
+        # Update speed display
+        if self.conversion_speed > 0:
+            self.speed_label.configure(text=f"{self.conversion_speed:.1f}x")
+        else:
+            self.speed_label.configure(text="0x")
+    
+    def parse_ffmpeg_progress(self, line):
+        """Parse FFmpeg output line for progress information"""
+        import re
+        
+        # Parse duration from initial output
+        if "Duration:" in line:
+            duration_match = re.search(r'Duration: (\d{2}:\d{2}:\d{2}\.\d{2})', line)
+            if duration_match:
+                self.total_duration = self.parse_duration(duration_match.group(1))
+                self.update_progress_display()
+        
+        # Parse current time and speed from progress lines
+        elif "time=" in line and "speed=" in line:
+            time_match = re.search(r'time=(\d{2}:\d{2}:\d{2}\.\d{2})', line)
+            speed_match = re.search(r'speed=\s*(\d+\.?\d*)x', line)
+            
+            current_time = 0
+            speed = 0
+            
+            if time_match:
+                current_time = self.parse_duration(time_match.group(1))
+            
+            if speed_match:
+                speed = float(speed_match.group(1))
+            
+            self.update_progress_display(current_time, speed)
+    
     def check_nvenc(self):
         """ตรวจสอบว่า ffmpeg รองรับ NVENC หรือไม่"""
         try:
@@ -246,7 +337,14 @@ class VideoConverterGUI:
             # Read output in real-time
             for line in self.current_process.stdout:
                 if line.strip():
-                    self.log_message(line.strip())
+                    # Parse progress information
+                    self.parse_ffmpeg_progress(line.strip())
+                    
+                    # Only log important messages to avoid spam
+                    if any(keyword in line.lower() for keyword in 
+                          ['error', 'warning', 'duration:', 'video:', 'audio:', 'stream']):
+                        self.log_message(line.strip())
+                
                 # Check if process was terminated
                 if self.current_process.poll() is not None:
                     break
@@ -302,12 +400,17 @@ class VideoConverterGUI:
             messagebox.showerror("Error", "ไม่พบ ffmpeg ในระบบ\nกรุณาติดตั้ง ffmpeg ก่อน")
             return
         
-        # Clear status text
+        # Clear status text and reset progress
         self.status_text.delete(1.0, tk.END)
+        self.total_duration = 0
+        self.current_time = 0
+        self.conversion_speed = 0
+        self.update_progress_display()
         
         # Disable convert button, enable stop button, and start progress
         self.convert_btn.configure(state="disabled", text="Converting...")
         self.stop_btn.configure(state="normal")
+        self.progress.configure(mode='indeterminate')
         self.progress.start()
         
         # Start conversion in thread
@@ -341,6 +444,9 @@ class VideoConverterGUI:
         self.stop_btn.configure(state="disabled")
         
         if success:
+            # Show 100% completion
+            self.progress_percent_label.configure(text="100%")
+            self.progress.configure(mode='determinate', maximum=100, value=100)
             messagebox.showinfo("Success", "แปลงไฟล์เสร็จแล้ว!")
         else:
             messagebox.showerror("Error", "การแปลงไฟล์ล้มเหลว")
