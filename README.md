@@ -1,12 +1,14 @@
-# Video Converter GUI
+# Video Converter GUI - iOS Compatible
 
-A GPU-accelerated video converter with a user-friendly GUI interface, built with Python and tkinter.
+A GPU-accelerated video converter with maximum iOS/iPhone/iPad compatibility, built with Python and tkinter.
 
 ## Features
 
+- 📱 **iOS/iPhone/iPad Compatible** - Maximum compatibility with all iOS devices
 - 🖥️ **Easy-to-use GUI** - Simple file selection and conversion
 - 🚀 **GPU Acceleration** - Uses NVIDIA NVENC when available, falls back to CPU
-- 🎬 **Multiple Codecs** - Supports H.264 and H.265 encoding (H.265 default)
+- 🎬 **Multiple Codecs** - Supports H.264 and H.265 encoding (H.264 default for iOS)
+- 📂 **Multiple Output Formats** - MP4, MOV, M4V (all iOS compatible)
 - 📊 **Real-time Progress** - Shows conversion progress and status
 - 📁 **Smart File Handling** - Auto-suggests output filenames
 - 🌐 **UTF-8 Support** - Handles international filenames (Thai, Chinese, etc.)
@@ -46,7 +48,7 @@ A GPU-accelerated video converter with a user-friendly GUI interface, built with
 1. Download `VideoConverter.exe` from the link above
 2. Double-click to run the application
 3. Select your input video file
-4. Choose output location and codec (H.265 recommended)
+4. Choose output location and codec (H.264 + MP4 recommended for iOS)
 5. Click "Convert Video" and watch the progress!
 
 ### 🛠️ Advanced: Run from Source
@@ -79,20 +81,28 @@ The executable will be created in the `dist` folder as `VideoConverter.exe`.
 ## How to Use
 1. **Select Input File**: Click "Browse" next to "Input File" and choose your video file
 2. **Choose Output Location**: Click "Browse" next to "Output File" to set where to save the converted video
-3. **Select Codec**: Choose between H.264 (faster, larger files) or H.265 (slower, smaller files)
-4. **GPU Acceleration**: Keep checked for faster conversion (if you have NVIDIA GPU)
-5. **Click Convert**: Start the conversion process
+3. **Select Codec**: Choose H.264 (recommended for iOS) or H.265 (smaller files but less compatible)
+4. **Select Format**: Choose MP4 (best iOS compatibility), MOV (Apple native), or M4V (iTunes compatible)
+5. **GPU Acceleration**: Keep checked for faster conversion (if you have NVIDIA GPU)
+6. **Click Convert**: Start the conversion process
 
 ## Supported Input Formats
 
 - MP4, AVI, MKV, MOV, WMV, FLV, WebM, TS, M4V
 - And many more formats supported by FFmpeg
 
-## Output Format
+## Output Formats & iOS Compatibility
 
-- Primary output: MP4 with AAC audio
-- Video bitrate: 5 Mbps
-- Audio bitrate: 192 kbps
+### Supported Output Formats:
+- **MP4** - Best iOS compatibility, recommended for iPhone/iPad
+- **MOV** - Apple's native format, excellent iOS support
+- **M4V** - iTunes compatible format
+
+### iOS Compatibility Settings:
+- **GPU (NVENC)**: Main Profile, Level 4.0, 3M bitrate
+- **CPU (libx264)**: Baseline Profile, Level 3.1, 2M bitrate (maximum compatibility)
+- **Audio**: AAC codec, 44.1kHz, stereo, 128k bitrate
+- **Video**: yuv420p pixel format (required by iOS)
 
 ## GPU Requirements
 
@@ -117,9 +127,11 @@ If GPU acceleration is not available, the tool will automatically fall back to C
 
 ### Conversion Fails
 - Check the status log in the GUI for detailed error messages
+- **Try disabling GPU Acceleration** (most common fix)
+- **Use H.264 + MP4** for maximum compatibility
 - Ensure input file is not corrupted
 - Make sure output directory is writable
-- Try a different codec (H.264 vs H.265)
+- For .ts files: Use CPU encoding (disable GPU)
 
 ### File Locked / Cannot Rename Files
 If you get "File In Use" errors when trying to rename video files:
@@ -137,6 +149,19 @@ If you get "File In Use" errors when trying to rename video files:
 taskkill /f /im ffmpeg.exe
 ```
 
+### iOS/iPhone/iPad Playback Issues
+If videos don't play on iOS devices:
+
+**Recommended Settings:**
+- **Codec**: H.264 (not H.265)
+- **Format**: MP4 (not MOV or M4V)
+- **GPU**: Disabled (use CPU encoding)
+
+**Why these settings work:**
+- H.264 Baseline Profile (CPU) has maximum iOS compatibility
+- MP4 container is universally supported
+- CPU encoding uses conservative settings that work on all iOS versions
+
 ### UTF-8 Filename Issues
 - The GUI now supports international characters (Thai, Chinese, Japanese, etc.)
 - Files with Unicode names are handled automatically
@@ -149,7 +174,7 @@ FormatFactory/
 ├── Pipfile                 # Pipenv dependencies
 ├── Pipfile.lock           # Locked versions (auto-generated)
 ├── convert.py             # Original command-line version
-├── convert_gui.py         # GUI version with UTF-8 support
+├── convert_gui.py         # GUI version with iOS compatibility
 ├── build_complete.py      # Complete build script (pipenv-enabled)
 ├── build_exe.py           # Alternative build script
 ├── build.bat             # Windows batch file for easy building
@@ -167,14 +192,37 @@ FormatFactory/
 ## Technical Details
 
 - **GUI Framework**: tkinter (Python standard library)
-- **Video Processing**: FFmpeg with UTF-8 encoding support
-- **GPU Acceleration**: NVIDIA NVENC (H.264/H.265)
+- **Video Processing**: FFmpeg with iOS compatibility optimizations
+- **GPU Acceleration**: NVIDIA NVENC (H.264/H.265) with fallback to CPU
+- **iOS Compatibility**: Baseline/Main profiles, proper pixel formats, AAC audio
 - **Dependency Management**: Pipenv for virtual environments
 - **Process Management**: psutil for advanced process control
 - **Executable Builder**: PyInstaller with hidden imports
 - **Threading**: Separate thread for conversion to keep GUI responsive
 - **File Handling**: Proper UTF-8 path normalization and lock management
-- **Default Codec**: H.265 (HEVC) for better compression
+- **Default Codec**: H.264 for maximum iOS compatibility
+- **Supported Containers**: MP4, MOV, M4V (all iOS compatible)
+
+## Changelog
+
+### Version 1.0.1 (Latest)
+- 📱 **Major iOS Compatibility Update**
+- ✅ Fixed iPhone/iPad video playback issues
+- 🔧 Added separate encoding profiles for GPU (NVENC) and CPU (libx264)
+- 📂 Added multiple output format support (MP4, MOV, M4V)
+- 🎯 GPU uses Main Profile + Level 4.0 for better performance
+- 🎯 CPU uses Baseline Profile + Level 3.1 for maximum compatibility
+- 🔊 Optimized audio settings (AAC, 44.1kHz, stereo)
+- 🛠️ Improved error handling and troubleshooting messages
+- 📱 Changed default codec from H.265 to H.264 for iOS compatibility
+- 🎬 Enhanced Transport Stream (.ts) file support
+- 💡 Added real-time codec and profile information in logs
+
+### Version 1.0.0
+- 🚀 Initial release with GPU acceleration
+- 🎬 H.264 and H.265 codec support
+- 📊 Real-time progress tracking
+- 🌐 UTF-8 filename support
 
 ## License
 
