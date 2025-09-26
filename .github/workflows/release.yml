@@ -1,0 +1,104 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0, v2.1.3, etc.
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for changelog generation
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install pipenv
+      run: |
+        python -m pip install --upgrade pip
+        pip install pipenv
+    
+    - name: Install dependencies
+      run: |
+        pipenv install
+    
+    - name: Build executable
+      run: |
+        pipenv run pyinstaller --onefile --windowed --name=VideoConverter --clean --noconfirm --hidden-import=tkinter --hidden-import=tkinter.ttk --hidden-import=tkinter.filedialog --hidden-import=tkinter.messagebox convert_gui.py
+    
+    - name: Get tag name
+      id: tag
+      run: |
+        echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      shell: bash
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the previous tag
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        
+        if [ -z "$PREVIOUS_TAG" ]; then
+          # If no previous tag, get all commits
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+        else
+          # Get commits between previous tag and current tag
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges ${PREVIOUS_TAG}..HEAD)
+        fi
+        
+        # Save changelog to file
+        echo "## What's Changed" > changelog.md
+        echo "" >> changelog.md
+        if [ -z "$CHANGELOG" ]; then
+          echo "- Initial release" >> changelog.md
+        else
+          echo "$CHANGELOG" >> changelog.md
+        fi
+        
+        echo "" >> changelog.md
+        echo "## Download" >> changelog.md
+        echo "- **VideoConverter.exe** - Standalone Windows executable (no Python required)" >> changelog.md
+        echo "- **Requirements:** Windows 10/11, FFmpeg installed and in PATH" >> changelog.md
+        echo "- **Optional:** NVIDIA GPU with NVENC for hardware acceleration" >> changelog.md
+        
+        # Set output for GitHub Actions
+        echo "CHANGELOG_FILE=changelog.md" >> $GITHUB_OUTPUT
+      shell: bash
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.TAG_NAME }}
+        release_name: Video Converter ${{ steps.tag.outputs.TAG_NAME }}
+        body_path: changelog.md
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/VideoConverter.exe
+        asset_name: VideoConverter.exe
+        asset_content_type: application/octet-stream
+    
+    - name: Upload Build Artifacts (for debugging)
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts-${{ steps.tag.outputs.TAG_NAME }}
+        path: |
+          dist/
+          build/
+        retention-days: 7

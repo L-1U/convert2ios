@@ -30,8 +30,9 @@ A GPU-accelerated video converter with a user-friendly GUI interface, built with
 ## Download & Installation
 
 ### 🚀 Quick Start (Recommended)
-**Download the pre-built executable:**
-- 📥 **[VideoConverter.exe](dist/VideoConverter.exe)** (9.1 MB)
+**Download the latest release:**
+- 📥 **[Latest Release](../../releases/latest)** - Download VideoConverter.exe
+- 📋 **[All Releases](../../releases)** - View all versions and changelogs
 - ✅ No Python installation required
 - ✅ No dependencies to install
 - ✅ Just download and run!
