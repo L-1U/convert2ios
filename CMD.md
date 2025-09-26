@@ -18,12 +18,12 @@ pipenv install
 pipenv run python convert_gui.py
 
 # Option 2: Use batch file
-run_gui.bat
+.\run_gui.bat
 ```
 ## Build
 ```bash
 # Option 1: Use batch file
-build.bat
+.\build.bat
 
 # Option 2: Manual
 pipenv run python build_complete.py
@@ -32,7 +32,7 @@ pipenv run python build_complete.py
 ## Kill FFMPEG
 ```bash
 # Option 1: Use batch file
-kill_ffmpeg.bat
+.\kill_ffmpeg.bat
 
 # Option 2: Manual
 pipenv run python kill_ffmpeg.py
