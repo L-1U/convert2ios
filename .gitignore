@@ -218,4 +218,5 @@ test_output/
 output/
 
 Pipfile.lock
+VideoConverter.spec
 build
