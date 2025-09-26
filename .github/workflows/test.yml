@@ -40,11 +40,11 @@ jobs:
     - name: Check if executable was created
       run: |
         if (Test-Path "dist/VideoConverter-test.exe") {
-          Write-Host "✅ Executable built successfully"
+          Write-Host "Executable built successfully"
           $size = (Get-Item "dist/VideoConverter-test.exe").Length / 1MB
-          Write-Host "📊 File size: $([math]::Round($size, 1)) MB"
+          Write-Host "File size: $([math]::Round($size, 1)) MB"
         } else {
-          Write-Host "❌ Executable not found"
+          Write-Host "Executable not found"
           exit 1
         }
       shell: powershell

@@ -21,36 +21,36 @@ def test_gui_components():
         # Test file dialog imports
         try:
             from tkinter import filedialog, messagebox
-            ttk.Label(root, text="✅ File dialogs available").pack()
+            ttk.Label(root, text="[OK] File dialogs available").pack()
         except ImportError as e:
-            ttk.Label(root, text=f"❌ File dialogs error: {e}").pack()
+            ttk.Label(root, text=f"[ERROR] File dialogs error: {e}").pack()
         
         # Test threading
         try:
             import threading
-            ttk.Label(root, text="✅ Threading available").pack()
+            ttk.Label(root, text="[OK] Threading available").pack()
         except ImportError as e:
-            ttk.Label(root, text=f"❌ Threading error: {e}").pack()
+            ttk.Label(root, text=f"[ERROR] Threading error: {e}").pack()
         
         # Test subprocess
         try:
             import subprocess
-            ttk.Label(root, text="✅ Subprocess available").pack()
+            ttk.Label(root, text="[OK] Subprocess available").pack()
         except ImportError as e:
-            ttk.Label(root, text=f"❌ Subprocess error: {e}").pack()
+            ttk.Label(root, text=f"[ERROR] Subprocess error: {e}").pack()
         
         # Test pathlib
         try:
             from pathlib import Path
-            ttk.Label(root, text="✅ Pathlib available").pack()
+            ttk.Label(root, text="[OK] Pathlib available").pack()
         except ImportError as e:
-            ttk.Label(root, text=f"❌ Pathlib error: {e}").pack()
+            ttk.Label(root, text=f"[ERROR] Pathlib error: {e}").pack()
         
         # Close button
         ttk.Button(root, text="Close Test", command=root.quit).pack(pady=20)
         
-        print("✅ GUI test window created successfully!")
-        print("🔧 Close the test window to continue...")
+        print("[OK] GUI test window created successfully!")
+        print("[INFO] Close the test window to continue...")
         
         # Run for 5 seconds then close automatically
         root.after(5000, root.quit)
@@ -59,22 +59,22 @@ def test_gui_components():
         return True
         
     except Exception as e:
-        print(f"❌ GUI test failed: {e}")
+        print(f"[ERROR] GUI test failed: {e}")
         return False
 
 def check_ffmpeg():
     """Check if FFmpeg is available"""
     import shutil
     if shutil.which("ffmpeg"):
-        print("✅ FFmpeg found in PATH")
+        print("[OK] FFmpeg found in PATH")
         return True
     else:
-        print("⚠️ FFmpeg not found in PATH")
+        print("[WARNING] FFmpeg not found in PATH")
         print("   Download from: https://ffmpeg.org/download.html")
         return False
 
 def main():
-    print("🧪 Testing Video Converter GUI Components")
+    print("Testing Video Converter GUI Components")
     print("="*50)
     
     # Test Python version
@@ -82,18 +82,18 @@ def main():
     
     # Test GUI components
     if test_gui_components():
-        print("✅ GUI components test passed!")
+        print("[OK] GUI components test passed!")
     else:
-        print("❌ GUI components test failed!")
+        print("[ERROR] GUI components test failed!")
         return False
     
     # Test FFmpeg
     check_ffmpeg()
     
-    print("\n🎯 Component Test Summary:")
-    print("✅ Python GUI framework working")
-    print("✅ All required modules available")
-    print("✅ Ready for building executable")
+    print("\nComponent Test Summary:")
+    print("[OK] Python GUI framework working")
+    print("[OK] All required modules available")
+    print("[OK] Ready for building executable")
     
     return True
 

@@ -37,3 +37,14 @@ pipenv run python build_complete.py
 # Option 2: Manual
 pipenv run python kill_ffmpeg.py
 ```
+
+## GitHub
+```bash
+# Delete the old tag and create a new one
+git tag -d v1.0.0
+git push --delete origin v1.0.0
+
+# Create a new tag
+git tag v1.0.1
+git push --tags
+```
