@@ -27,7 +27,28 @@ A GPU-accelerated video converter with a user-friendly GUI interface, built with
 - All of the above
 - Dependencies managed automatically via Pipenv
 
-## Installation & Usage
+## Download & Installation
+
+### 🚀 Quick Start (Recommended)
+**Download the pre-built executable:**
+- 📥 **[VideoConverter.exe](dist/VideoConverter.exe)** (9.1 MB)
+- ✅ No Python installation required
+- ✅ No dependencies to install
+- ✅ Just download and run!
+
+**Requirements for the executable:**
+- Windows 10/11
+- FFmpeg installed and in PATH ([Download FFmpeg](https://ffmpeg.org/download.html))
+- NVIDIA GPU with NVENC (optional, for GPU acceleration)
+
+**How to use:**
+1. Download `VideoConverter.exe` from the link above
+2. Double-click to run the application
+3. Select your input video file
+4. Choose output location and codec (H.265 recommended)
+5. Click "Convert Video" and watch the progress!
+
+### 🛠️ Advanced: Run from Source
 
 ### Option 1: Run from Source with Pipenv
 ```bash
