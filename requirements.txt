@@ -1,0 +1,8 @@
+# GUI and executable building
+pyinstaller==6.1.0
+
+# Optional: For better GUI themes (not required but recommended)
+ttkthemes==3.2.2
+
+# Note: tkinter comes with Python standard library
+# Note: ffmpeg must be installed separately on the system

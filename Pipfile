@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 ffmpeg-python = "*"
+pyinstaller = "*"
+ttkthemes = "*"
+psutil = "*"
 
 [dev-packages]
 
